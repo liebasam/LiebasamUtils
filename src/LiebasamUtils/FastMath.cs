@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using System.Threading.Tasks;
 
 namespace LiebasamUtils
 {
@@ -31,6 +32,26 @@ namespace LiebasamUtils
                 throw new IndexOutOfRangeException(InvalidInputLength);
             T[] ans = new T[lhs.Length];
             Add_NoChecks(lhs, 0, rhs, 0, ans, 0, lhs.Length);
+            return ans;
+        }
+
+        /// <summary>
+        /// Adds together two arrays and returns the result. This operation is done in parallel when possible.
+        /// </summary>
+        /// <exception cref="NotSupportedException"><typeparamref name="T"/> does not support addition.</exception>
+        /// <exception cref="IndexOutOfRangeException">The input arrays have different lengths.</exception>
+        public static T[] AddP<T>(T[] lhs, T[] rhs) where T : struct
+        {
+            if (!CanAdd<T>())
+                throw new NotSupportedException(string.Format(NotSupported, typeof(T).FullName));
+            if (lhs is null)
+                throw new ArgumentNullException(nameof(lhs));
+            if (rhs is null)
+                throw new ArgumentNullException(nameof(rhs));
+            if (lhs.Length != rhs.Length)
+                throw new IndexOutOfRangeException(InvalidInputLength);
+            T[] ans = new T[lhs.Length];
+            AddP_NoChecks(lhs, 0, rhs, 0, ans, 0, lhs.Length);
             return ans;
         }
 
@@ -104,12 +125,31 @@ namespace LiebasamUtils
             for (; i < length; i++)
                 ans[ansIndex + i] = (dynamic)lhs[lhsIndex + i] + rhs[rhsIndex + i];
         }
+
+        static void AddP_NoChecks<T>(T[] lhs, int lhsIndex, T[] rhs, int rhsIndex, T[] ans, int ansIndex, int length) where T : struct
+        {
+            if (length == 0)
+                return;
+
+            int stop = length / Vector<T>.Count;
+            Parallel.For(0, stop, i =>
+            {
+                i *= Vector<T>.Count;
+                var va = new Vector<T>(lhs, lhsIndex + i);
+                var vb = new Vector<T>(rhs, rhsIndex + i);
+                var vans = Vector.Add(va, vb);
+                vans.CopyTo(ans, ansIndex + i);
+            });
+
+            for (int i = stop * Vector<T>.Count; i < length; i++)
+                ans[ansIndex + i] = (dynamic)lhs[lhsIndex + i] + rhs[rhsIndex + i];
+        }
         #endregion
 
         #region Dot
-        /// <summary>
-        /// Returns the dot-product of two arrays.
-        /// </summary>
+            /// <summary>
+            /// Returns the dot-product of two arrays.
+            /// </summary>
         public static T Dot<T>(T[] lhs, T[] rhs) where T : struct
         {
             if (!CanAdd<T>() || !CanMultiply<T>())
