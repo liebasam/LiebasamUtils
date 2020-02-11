@@ -53,5 +53,5 @@ namespace LiebasamUtils.Random.Tests
                 Assert.AreEqual(target, sums[3], delta);
             }
         }
-        }
+    }
 }

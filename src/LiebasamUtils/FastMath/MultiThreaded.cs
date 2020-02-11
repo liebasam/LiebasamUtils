@@ -162,7 +162,7 @@ namespace LiebasamUtils
             if (lhs.Length != rhs.Length)
                 throw new IndexOutOfRangeException(InvalidInputLength);
             T[] ans = new T[lhs.Length];
-            Multiply_NoChecks(lhs, 0, rhs, 0, ans, 0, lhs.Length);
+            MultiplyPar_NoChecks(lhs, 0, rhs, 0, ans, 0, lhs.Length);
             return ans;
         }
 
@@ -183,7 +183,7 @@ namespace LiebasamUtils
                 throw new ArgumentNullException(nameof(ans));
             if (lhs.Length != rhs.Length || lhs.Length != ans.Length)
                 throw new IndexOutOfRangeException(InvalidInputLength);
-            Multiply_NoChecks(lhs, 0, rhs, 0, ans, 0, lhs.Length);
+            MultiplyPar_NoChecks(lhs, 0, rhs, 0, ans, 0, lhs.Length);
         }
 
         /// <summary>
@@ -301,8 +301,8 @@ namespace LiebasamUtils
         {
             if (lhs.Length == 0 || ans.Length == 0)
                 return;
-            for (int i = 0; i < ans.Length; i++)
-                ans[i] = Dot(lhs, rhs[i]);
+            Parallel.For(0, ans.Length, 
+                i => ans[i] = Dot(lhs, rhs[i]));
         }
         #endregion
     }
