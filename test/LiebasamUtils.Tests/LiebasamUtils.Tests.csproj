@@ -50,6 +50,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Random\TRandomProvider.cs" />
+    <Compile Include="Random\TRandomExtensions.cs" />
     <Compile Include="TFastMath.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -57,7 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\LiebasamUtils\LiebasamUtils.csproj">
-      <Project>{b38ef170-bc5a-4d80-99ff-deda52735cae}</Project>
+      <Project>{a66d45ad-8147-446a-8b2d-45ff2c71f56d}</Project>
       <Name>LiebasamUtils</Name>
     </ProjectReference>
   </ItemGroup>

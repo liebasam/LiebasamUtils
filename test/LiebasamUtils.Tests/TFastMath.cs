@@ -32,7 +32,19 @@ namespace LiebasamUtils.Tests
 
             [TestMethod]
             [ExpectedException(typeof(NotSupportedException))]
+            public void Dot() => FastMath.Dot(new MyStruct[0], new MyStruct[0]);
+
+            [TestMethod]
+            [ExpectedException(typeof(NotSupportedException))]
+            public void Max() => FastMath.Max(new MyStruct[0], new MyStruct[0]);
+
+            [TestMethod]
+            [ExpectedException(typeof(NotSupportedException))]
             public void Multiply() => FastMath.Multiply(new MyStruct[0], new MyStruct[0]);
+
+            [TestMethod]
+            [ExpectedException(typeof(NotSupportedException))]
+            public void MatrixMultiply() => FastMath.MatrixMultiply(new MyStruct[0], new MyStruct[0][]);
         }
 
         [TestClass]
@@ -295,6 +307,101 @@ namespace LiebasamUtils.Tests
                 {
                     var dot = FastMath.Dot(Float123, Float123);
                     Assert.AreEqual(14, dot);
+                }
+            }
+        }
+
+        [TestClass]
+        public class Max
+        {
+            [TestClass]
+            public class Failure
+            {
+                [TestMethod]
+                public void NullLHS()
+                {
+                    var e = Assert.ThrowsException<ArgumentNullException>(
+                        () => FastMath.Max(null, Float0));
+                    Assert.AreEqual(LHS, e.ParamName);
+                    e = Assert.ThrowsException<ArgumentNullException>(
+                        () => FastMath.Max(null, Float0, Float0));
+                    Assert.AreEqual(LHS, e.ParamName);
+                    e = Assert.ThrowsException<ArgumentNullException>(
+                        () => FastMath.Max(null, 0));
+                    Assert.AreEqual(LHS, e.ParamName);
+                    e = Assert.ThrowsException<ArgumentNullException>(
+                        () => FastMath.Max(null, 0, Float0));
+                    Assert.AreEqual(LHS, e.ParamName);
+                }
+
+                [TestMethod]
+                public void NullRHS()
+                {
+                    var e = Assert.ThrowsException<ArgumentNullException>(
+                        () => FastMath.Max(Float0, null));
+                    Assert.AreEqual(RHS, e.ParamName);
+                    e = Assert.ThrowsException<ArgumentNullException>(
+                        () => FastMath.Max(Float0, null, Float0));
+                    Assert.AreEqual(RHS, e.ParamName);
+                }
+
+                [TestMethod]
+                public void InvalidLength()
+                {
+                    Assert.ThrowsException<IndexOutOfRangeException>(
+                        () => FastMath.Max(Float0, Float1));
+                    Assert.ThrowsException<IndexOutOfRangeException>(
+                        () => FastMath.Max(Float0, Float0, Float1));
+                    Assert.ThrowsException<IndexOutOfRangeException>(
+                        () => FastMath.Max(Float0, Float1, Float0));
+                    Assert.ThrowsException<IndexOutOfRangeException>(
+                        () => FastMath.Max(Float1, Float0, Float0));
+                    Assert.ThrowsException<IndexOutOfRangeException>(
+                        () => FastMath.Max(Float0, 0, Float1));
+                }
+            }
+
+            [TestClass]
+            public class Success
+            {
+                [TestMethod]
+                public void TwoArgsVec()
+                {
+                    var ret = FastMath.Max(Float123456[0], Float123456[1]);
+                    Assert.AreEqual(3, ret.Length);
+                    Assert.AreEqual(4, ret[0]);
+                    Assert.AreEqual(5, ret[1]);
+                    Assert.AreEqual(6, ret[2]);
+                }
+
+                [TestMethod]
+                public void ThreeArgsVec()
+                {
+                    Array.Clear(Float3, 0, 3);
+                    FastMath.Max(Float123456[1], Float123456[0], Float3);
+                    Assert.AreEqual(4, Float3[0]);
+                    Assert.AreEqual(5, Float3[1]);
+                    Assert.AreEqual(6, Float3[2]);
+                }
+
+                [TestMethod]
+                public void TwoArgsScalar()
+                {
+                    var ret = FastMath.Max(Float123, 2);
+                    Assert.AreEqual(3, ret.Length);
+                    Assert.AreEqual(2, ret[0]);
+                    Assert.AreEqual(2, ret[1]);
+                    Assert.AreEqual(3, ret[2]);
+                }
+
+                [TestMethod]
+                public void ThreeArgsScalar()
+                {
+                    Array.Clear(Float3, 0, 3);
+                    FastMath.Max(Float123, 5, Float3);
+                    Assert.AreEqual(5, Float3[0]);
+                    Assert.AreEqual(5, Float3[1]);
+                    Assert.AreEqual(5, Float3[2]);
                 }
             }
         }

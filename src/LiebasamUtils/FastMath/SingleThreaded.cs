@@ -3,16 +3,8 @@ using System.Numerics;
 
 namespace LiebasamUtils
 {
-    public static class FastMath
+    public static partial class FastMath
     {
-        #region String Constants
-        static readonly string InvalidInputLength = "Inputs must have the same length.";
-        static readonly string NegativeLength = "Length and indices must be positive.";
-        static readonly string InvalidIndices = "Indices are invalid for the given arrays.";
-        static readonly string NotSupported = "{0} does not support this operation.";
-        static readonly string EqualParams = "Parameters must reference different arrays.";
-        #endregion
-
         #region Addition
         /// <summary>
         /// Adds together two arrays and returns the result.
@@ -110,6 +102,9 @@ namespace LiebasamUtils
         /// <summary>
         /// Returns the dot-product of two arrays.
         /// </summary>
+        /// <exception cref="NotSupportedException"><typeparamref name="T"/> does not support addition
+        /// or multiplication.</exception>
+        /// <exception cref="IndexOutOfRangeException">The input arrays have different lengths.</exception>
         public static T Dot<T>(T[] lhs, T[] rhs) where T : struct
         {
             if (!CanAdd<T>() || !CanMultiply<T>())
@@ -119,7 +114,7 @@ namespace LiebasamUtils
             if (rhs is null)
                 throw new ArgumentNullException(nameof(rhs));
             if (lhs.Length != rhs.Length)
-                throw new IndexOutOfRangeException(FastMath.InvalidInputLength);
+                throw new IndexOutOfRangeException(InvalidInputLength);
             return Dot_NoCheck(lhs, rhs);
         }
 
@@ -141,6 +136,119 @@ namespace LiebasamUtils
                 sum += (dynamic)lhs[i] * rhs[i];
 
             return sum;
+        }
+        #endregion
+
+        #region Max
+        /// <summary>
+        /// Returns the piecewise maximum of two arrays.
+        /// </summary>
+        /// <exception cref="NotSupportedException"><typeparamref name="T"/> does not support addition.</exception>
+        /// <exception cref="IndexOutOfRangeException">The input arrays have different lengths.</exception>
+        public static T[] Max<T>(T[] lhs, T[] rhs) where T : struct
+        {
+            if (!CanAdd<T>())
+                throw new NotSupportedException(string.Format(NotSupported, typeof(T).FullName));
+            if (lhs is null)
+                throw new ArgumentNullException(nameof(lhs));
+            if (rhs is null)
+                throw new ArgumentNullException(nameof(rhs));
+            if (lhs.Length != rhs.Length)
+                throw new IndexOutOfRangeException(InvalidInputLength);
+            T[] ans = new T[lhs.Length];
+            Max_NoChecks(lhs, rhs, ans);
+            return ans;
+        }
+
+        /// <summary>
+        /// Returns the piecewise maximum of an array and a given value.
+        /// </summary>
+        /// <exception cref="NotSupportedException"><typeparamref name="T"/> does not support addition.</exception>
+        /// <exception cref="IndexOutOfRangeException">The input arrays have different lengths.</exception>
+        public static T[] Max<T>(T[] lhs, T value) where T : struct
+        {
+            if (!CanAdd<T>())
+                throw new NotSupportedException(string.Format(NotSupported, typeof(T).FullName));
+            if (lhs is null)
+                throw new ArgumentNullException(nameof(lhs));
+            T[] ans = new T[lhs.Length];
+            Max_NoChecks(lhs, value, ans);
+            return ans;
+        }
+
+        /// <summary>
+        /// Gets the piecewise maximum of two arrays, placing the result in <paramref name="ans"/>.
+        /// </summary>
+        /// <exception cref="NotSupportedException"><typeparamref name="T"/> does not support addition.</exception>
+        /// <exception cref="IndexOutOfRangeException">The input arrays have different lengths.</exception>
+        public static void Max<T>(T[] lhs, T[] rhs, T[] ans) where T : struct
+        {
+            if (!CanAdd<T>())
+                throw new NotSupportedException(string.Format(NotSupported, typeof(T).FullName));
+            if (lhs is null)
+                throw new ArgumentNullException(nameof(lhs));
+            if (rhs is null)
+                throw new ArgumentNullException(nameof(rhs));
+            if (ans is null)
+                throw new ArgumentNullException(nameof(ans));
+            if (lhs.Length != rhs.Length || lhs.Length != ans.Length)
+                throw new IndexOutOfRangeException(InvalidInputLength);
+            Max_NoChecks(lhs, rhs, ans);
+        }
+
+        /// <summary>
+        /// Gets the piecewise maximum of an array and given value,
+        /// placing the result in <paramref name="ans"/>.
+        /// </summary>
+        /// <exception cref="NotSupportedException"><typeparamref name="T"/> does not support addition.</exception>
+        /// <exception cref="IndexOutOfRangeException">The input arrays have different lengths.</exception>
+        public static void Max<T>(T[] lhs, T value, T[] ans) where T : struct
+        {
+            if (!CanAdd<T>())
+                throw new NotSupportedException(string.Format(NotSupported, typeof(T).FullName));
+            if (lhs is null)
+                throw new ArgumentNullException(nameof(lhs));
+            if (ans is null)
+                throw new ArgumentNullException(nameof(ans));
+            if (lhs.Length != ans.Length)
+                throw new IndexOutOfRangeException(InvalidInputLength);
+            Max_NoChecks(lhs, value, ans);
+        }
+
+        static void Max_NoChecks<T>(T[] lhs, T[] rhs, T[] ans) where T : struct
+        {
+            if (lhs.Length == 0)
+                return;
+
+            int i = 0;
+            Vector<T> va, vb, vans;
+            for (; i < lhs.Length - Vector<T>.Count; i += Vector<T>.Count)
+            {
+                va = new Vector<T>(lhs, i);
+                vb = new Vector<T>(rhs, i);
+                vans = Vector.Max(va, vb);
+                vans.CopyTo(ans, i);
+            }
+            for (; i < lhs.Length; i++)
+                ans[i] = ((dynamic)lhs[i] > rhs[i]) ? lhs[i] : rhs[i];
+        }
+
+        static void Max_NoChecks<T>(T[] lhs, T value, T[] ans) where T : struct
+        {
+            if (lhs.Length == 0)
+                return;
+
+            int i = 0;
+            Vector<T> vb = Vector.Multiply(Vector<T>.One, value);
+            Vector<T> va, vans;
+            for (; i < lhs.Length - Vector<T>.Count; i += Vector<T>.Count)
+            {
+                va = new Vector<T>(lhs, i);
+                vans = Vector.Max(va, vb);
+                vans.CopyTo(ans, i);
+            }
+            for (; i < lhs.Length; i++)
+                ans[i] = ((dynamic)lhs[i] > value) ? lhs[i] : value;
         }
         #endregion
 
@@ -301,34 +409,6 @@ namespace LiebasamUtils
                 return;
             for (int i = 0; i < ans.Length; i++)
                 ans[i] = Dot(lhs, rhs[i]);
-        }
-        #endregion
-
-        #region Helpers
-        static bool CanAdd<T>()
-        {
-            try
-            {
-                var x = default(T) + (dynamic)default(T);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        static bool CanMultiply<T>()
-        {
-            try
-            {
-                var x = default(T) * (dynamic)default(T);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
         }
         #endregion
     }
