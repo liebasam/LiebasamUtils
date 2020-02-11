@@ -52,7 +52,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Random\TRandomProvider.cs" />
     <Compile Include="Random\TRandomExtensions.cs" />
-    <None Include="TFastMathPar.cs" />
     <Compile Include="TFastMath.cs" />
   </ItemGroup>
   <ItemGroup>
