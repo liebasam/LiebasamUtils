@@ -7,11 +7,9 @@ namespace LiebasamUtils.Random
     /// <summary>
     /// Randomized extension methods for enumerable collections.
     /// </summary>
-    public static class EnumerableExtensions
+    public static class RandomExtensions
     {
-        #region String Constants
         static readonly string EmptyCollection = "Collection must be non-empty.";
-        #endregion
 
         #region Methods
         /// <summary>
@@ -38,8 +36,8 @@ namespace LiebasamUtils.Random
             if (collection is null)
                 throw new ArgumentNullException(nameof(collection));
 
-            int[] indices = RandomProvider.Shuffled(
-                Enumerable.Range(0, collection.Count()).ToArray());
+            int[] indices = Enumerable.Range(0, collection.Count()).ToArray();
+            RandomProvider.Shuffle(indices);
 
             for (int i = 0; i < indices.Length; i++)
                 yield return collection.ElementAt(indices[i]);

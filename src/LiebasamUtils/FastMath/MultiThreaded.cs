@@ -1,46 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace LiebasamUtils
 {
-    public static class FastMath
+    public static partial class FastMath
     {
-        #region String Constants
-        static readonly string InvalidInputLength = "Inputs must have the same length.";
-        static readonly string NegativeLength = "Length and indices must be positive.";
-        static readonly string InvalidIndices = "Indices are invalid for the given arrays.";
-        static readonly string NotSupported = "{0} does not support this operation.";
-        static readonly string EqualParams = "Parameters must reference different arrays.";
-        #endregion
-
         #region Addition
-        /// <summary>
-        /// Adds together two arrays and returns the result.
-        /// </summary>
-        /// <exception cref="NotSupportedException"><typeparamref name="T"/> does not support addition.</exception>
-        /// <exception cref="IndexOutOfRangeException">The input arrays have different lengths.</exception>
-        public static T[] Add<T>(T[] lhs, T[] rhs) where T : struct
-        {
-            if (!CanAdd<T>())
-                throw new NotSupportedException(string.Format(NotSupported, typeof(T).FullName));
-            if (lhs is null)
-                throw new ArgumentNullException(nameof(lhs));
-            if (rhs is null)
-                throw new ArgumentNullException(nameof(rhs));
-            if (lhs.Length != rhs.Length)
-                throw new IndexOutOfRangeException(InvalidInputLength);
-            T[] ans = new T[lhs.Length];
-            Add_NoChecks(lhs, 0, rhs, 0, ans, 0, lhs.Length);
-            return ans;
-        }
-
         /// <summary>
         /// Adds together two arrays and returns the result. This operation is done in parallel when possible.
         /// </summary>
         /// <exception cref="NotSupportedException"><typeparamref name="T"/> does not support addition.</exception>
         /// <exception cref="IndexOutOfRangeException">The input arrays have different lengths.</exception>
-        public static T[] AddP<T>(T[] lhs, T[] rhs) where T : struct
+        public static T[] AddPar<T>(T[] lhs, T[] rhs) where T : struct
         {
             if (!CanAdd<T>())
                 throw new NotSupportedException(string.Format(NotSupported, typeof(T).FullName));
@@ -51,7 +25,7 @@ namespace LiebasamUtils
             if (lhs.Length != rhs.Length)
                 throw new IndexOutOfRangeException(InvalidInputLength);
             T[] ans = new T[lhs.Length];
-            AddP_NoChecks(lhs, 0, rhs, 0, ans, 0, lhs.Length);
+            AddPar_NoChecks(lhs, 0, rhs, 0, ans, 0, lhs.Length);
             return ans;
         }
 
@@ -60,7 +34,7 @@ namespace LiebasamUtils
         /// </summary>
         /// <exception cref="NotSupportedException"><typeparamref name="T"/> does not support addition.</exception>
         /// <exception cref="IndexOutOfRangeException">The input arrays have different lengths.</exception>
-        public static void Add<T>(T[] lhs, T[] rhs, T[] ans) where T : struct
+        public static void AddPar<T>(T[] lhs, T[] rhs, T[] ans) where T : struct
         {
             if (!CanAdd<T>())
                 throw new NotSupportedException(string.Format(NotSupported, typeof(T).FullName));
@@ -72,7 +46,7 @@ namespace LiebasamUtils
                 throw new ArgumentNullException(nameof(ans));
             if (lhs.Length != rhs.Length || lhs.Length != ans.Length)
                 throw new IndexOutOfRangeException(InvalidInputLength);
-            Add_NoChecks(lhs, 0, rhs, 0, ans, 0, lhs.Length);
+            AddPar_NoChecks(lhs, 0, rhs, 0, ans, 0, lhs.Length);
         }
 
         /// <summary>
@@ -89,7 +63,7 @@ namespace LiebasamUtils
         /// <param name="length">Number of entries to operate on.</param>
         /// <exception cref="NotSupportedException"><typeparamref name="T"/> does not support addition.</exception>
         /// <exception cref="IndexOutOfRangeException">Any indices or <paramref name="length"/> are less than 0, or invalid.</exception>
-        public static void Add<T>(T[] lhs, int lhsIndex, T[] rhs, int rhsIndex, T[] ans, int ansIndex, int length) where T : struct
+        public static void AddPar<T>(T[] lhs, int lhsIndex, T[] rhs, int rhsIndex, T[] ans, int ansIndex, int length) where T : struct
         {
             if (!CanAdd<T>())
                 throw new NotSupportedException(string.Format(NotSupported, typeof(T).FullName));
@@ -105,28 +79,10 @@ namespace LiebasamUtils
                 throw new IndexOutOfRangeException(NegativeLength);
             if (lhsIndex + length > lhs.Length || rhsIndex + length > rhs.Length || ansIndex + length > ans.Length)
                 throw new IndexOutOfRangeException(InvalidIndices);
-            Add_NoChecks(lhs, lhsIndex, rhs, rhsIndex, ans, ansIndex, length);
+            AddPar_NoChecks(lhs, lhsIndex, rhs, rhsIndex, ans, ansIndex, length);
         }
 
-        static void Add_NoChecks<T>(T[] lhs, int lhsIndex, T[] rhs, int rhsIndex, T[] ans, int ansIndex, int length) where T : struct
-        {
-            if (length == 0)
-                return;
-
-            int i = 0;
-            Vector<T> va, vb, vans;
-            for (; i < length - Vector<T>.Count; i += Vector<T>.Count)
-            {
-                va = new Vector<T>(lhs, lhsIndex + i);
-                vb = new Vector<T>(rhs, rhsIndex + i);
-                vans = Vector.Add(va, vb);
-                vans.CopyTo(ans, ansIndex + i);
-            }
-            for (; i < length; i++)
-                ans[ansIndex + i] = (dynamic)lhs[lhsIndex + i] + rhs[rhsIndex + i];
-        }
-
-        static void AddP_NoChecks<T>(T[] lhs, int lhsIndex, T[] rhs, int rhsIndex, T[] ans, int ansIndex, int length) where T : struct
+        static void AddPar_NoChecks<T>(T[] lhs, int lhsIndex, T[] rhs, int rhsIndex, T[] ans, int ansIndex, int length) where T : struct
         {
             if (length == 0)
                 return;
@@ -147,10 +103,10 @@ namespace LiebasamUtils
         #endregion
 
         #region Dot
-            /// <summary>
-            /// Returns the dot-product of two arrays.
-            /// </summary>
-        public static T Dot<T>(T[] lhs, T[] rhs) where T : struct
+        /// <summary>
+        /// Returns the dot-product of two arrays.
+        /// </summary>
+        public static T DotPar<T>(T[] lhs, T[] rhs) where T : struct
         {
             if (!CanAdd<T>() || !CanMultiply<T>())
                 throw new NotSupportedException(string.Format(NotSupported, typeof(T).FullName));
@@ -159,28 +115,33 @@ namespace LiebasamUtils
             if (rhs is null)
                 throw new ArgumentNullException(nameof(rhs));
             if (lhs.Length != rhs.Length)
-                throw new IndexOutOfRangeException(FastMath.InvalidInputLength);
+                throw new IndexOutOfRangeException(InvalidInputLength);
             return Dot_NoCheck(lhs, rhs);
         }
 
-        static T Dot_NoCheck<T>(T[] lhs, T[] rhs) where T : struct
+        static T DotPar_NoCheck<T>(T[] lhs, T[] rhs) where T : struct
         {
             if (lhs.Length == 0)
                 return default;
-
-            int i = 0;
+            
             dynamic sum = default(T);
-            Vector<T> va, vb;
-            for (; i < lhs.Length - Vector<T>.Count; i += Vector<T>.Count)
-            {
-                va = new Vector<T>(lhs, i);
-                vb = new Vector<T>(rhs, i);
-                sum += Vector.Dot(va, vb);
-            }
-            for (; i < lhs.Length; i++)
+            Parallel.For<T>(0, lhs.Length / Vector<T>.Count, 
+                () => default(T), 
+                (i, state, subtotal) => GetDotProduct(lhs, rhs, i),
+                (x) => sum += x);
+
+            for (int i = lhs.Length / Vector<T>.Count; i < lhs.Length; i++)
                 sum += (dynamic)lhs[i] * rhs[i];
 
             return sum;
+        }
+
+        static T GetDotProduct<T>(T[] lhs, T[] rhs, int i) where T : struct
+        {
+            i *= Vector<T>.Count;
+            var va = new Vector<T>(lhs, i * Vector<T>.Count);
+            var vb = new Vector<T>(rhs, i * Vector<T>.Count);
+            return Vector.Dot(va, vb);
         }
         #endregion
 
@@ -190,7 +151,7 @@ namespace LiebasamUtils
         /// </summary>
         /// <exception cref="NotSupportedException"><typeparamref name="T"/> does not support multiplication.</exception>
         /// <exception cref="IndexOutOfRangeException">The input arrays have different lengths.</exception>
-        public static T[] Multiply<T>(T[] lhs, T[] rhs) where T : struct
+        public static T[] MultiplyPar<T>(T[] lhs, T[] rhs) where T : struct
         {
             if (!CanMultiply<T>())
                 throw new NotSupportedException(string.Format(NotSupported, typeof(T).FullName));
@@ -210,7 +171,7 @@ namespace LiebasamUtils
         /// </summary>
         /// <exception cref="NotSupportedException"><typeparamref name="T"/> does not support multiplication.</exception>
         /// <exception cref="IndexOutOfRangeException">The input arrays have different lengths.</exception>
-        public static void Multiply<T>(T[] lhs, T[] rhs, T[] ans) where T : struct
+        public static void MultiplyPar<T>(T[] lhs, T[] rhs, T[] ans) where T : struct
         {
             if (!CanMultiply<T>())
                 throw new NotSupportedException(string.Format(NotSupported, typeof(T).FullName));
@@ -239,7 +200,7 @@ namespace LiebasamUtils
         /// <param name="length">Number of entries to operate on.</param>
         /// <exception cref="NotSupportedException"><typeparamref name="T"/> does not support multiplication.</exception>
         /// <exception cref="IndexOutOfRangeException">Any indices or <paramref name="length"/> are less than 0, or invalid.</exception>
-        public static void Multiply<T>(T[] lhs, int lhsIndex, T[] rhs, int rhsIndex, T[] ans, int ansIndex, int length) where T : struct
+        public static void MultiplyPar<T>(T[] lhs, int lhsIndex, T[] rhs, int rhsIndex, T[] ans, int ansIndex, int length) where T : struct
         {
             if (!CanMultiply<T>())
                 throw new NotSupportedException(string.Format(NotSupported, typeof(T).FullName));
@@ -255,25 +216,26 @@ namespace LiebasamUtils
                 throw new IndexOutOfRangeException(NegativeLength);
             if (lhsIndex + length > lhs.Length || rhsIndex + length > rhs.Length || ansIndex + length > ans.Length)
                 throw new IndexOutOfRangeException(InvalidIndices);
-            Multiply_NoChecks(lhs, lhsIndex, rhs, rhsIndex, ans, ansIndex, length);
+            MultiplyPar_NoChecks(lhs, lhsIndex, rhs, rhsIndex, ans, ansIndex, length);
         }
 
-        static void Multiply_NoChecks<T>(T[] lhs, int lhsIndex, T[] rhs, int rhsIndex, T[] ans, int ansIndex, int length) where T : struct
+        static void MultiplyPar_NoChecks<T>(T[] lhs, int lhsIndex, T[] rhs, int rhsIndex, T[] ans, int ansIndex, int length) where T : struct
         {
             if (length == 0)
                 return;
 
-            int i = 0;
-            Vector<T> va, vb, vans;
-            for (; i < length - Vector<T>.Count; i += Vector<T>.Count)
+            int stop = length / Vector<T>.Count;
+            Parallel.For(0, stop, i =>
             {
-                va = new Vector<T>(lhs, lhsIndex + i);
-                vb = new Vector<T>(rhs, rhsIndex + i);
-                vans = Vector.Multiply(va, vb);
+                i *= Vector<T>.Count;
+                var va = new Vector<T>(lhs, lhsIndex + i);
+                var vb = new Vector<T>(rhs, rhsIndex + i);
+                var vans = Vector.Multiply(va, vb);
                 vans.CopyTo(ans, ansIndex + i);
-            }
-            for (; i < length; i++)
-                ans[ansIndex + i] = (dynamic)lhs[lhsIndex + i] * rhs[rhsIndex + i];
+            });
+
+            for (int i = stop * Vector<T>.Count; i < length; i++)
+                ans[ansIndex + i] = (dynamic)lhs[lhsIndex + i] + rhs[rhsIndex + i];
         }
         #endregion
 
@@ -283,7 +245,7 @@ namespace LiebasamUtils
         /// </summary>
         /// <exception cref="NotSupportedException"><typeparamref name="T"/> does not support addition and multiplication.</exception>
         /// <exception cref="IndexOutOfRangeException">The input arrays have incompatible lengths.</exception>
-        public static T[] MatrixMultiply<T>(T[] lhs, T[][] rhs) where T : struct
+        public static T[] MatrixMultiplyPar<T>(T[] lhs, T[][] rhs) where T : struct
         {
             if (!CanAdd<T>() || !CanMultiply<T>())
                 throw new NotSupportedException(NotSupported);
@@ -299,7 +261,7 @@ namespace LiebasamUtils
                     throw new IndexOutOfRangeException(InvalidInputLength);
             }
             T[] ans = new T[rhs.Length];
-            MatrixMultiply_NoChecks(lhs, rhs, ans);
+            MatrixMultiplyPar_NoChecks(lhs, rhs, ans);
             return ans;
         }
 
@@ -309,7 +271,7 @@ namespace LiebasamUtils
         /// <exception cref="NotSupportedException"><typeparamref name="T"/> does not support addition and multiplication,
         /// or parameters reference the same array.</exception>
         /// <exception cref="IndexOutOfRangeException">The input arrays have incompatible lengths.</exception>
-        public static void MatrixMultiply<T>(T[] lhs, T[][] rhs, T[] ans) where T : struct
+        public static void MatrixMultiplyPar<T>(T[] lhs, T[][] rhs, T[] ans) where T : struct
         {
             if (!CanAdd<T>() || !CanMultiply<T>())
                 throw new NotSupportedException(NotSupported);
@@ -332,43 +294,15 @@ namespace LiebasamUtils
                 if (rhs[i] == lhs || rhs[i] == ans)
                     throw new NotSupportedException(EqualParams);
             }
-            MatrixMultiply_NoChecks(lhs, rhs, ans);
+            MatrixMultiplyPar_NoChecks(lhs, rhs, ans);
         }
 
-        static void MatrixMultiply_NoChecks<T>(T[] lhs, T[][] rhs, T[] ans) where T : struct
+        static void MatrixMultiplyPar_NoChecks<T>(T[] lhs, T[][] rhs, T[] ans) where T : struct
         {
             if (lhs.Length == 0 || ans.Length == 0)
                 return;
             for (int i = 0; i < ans.Length; i++)
                 ans[i] = Dot(lhs, rhs[i]);
-        }
-        #endregion
-
-        #region Helpers
-        static bool CanAdd<T>()
-        {
-            try
-            {
-                var x = default(T) + (dynamic)default(T);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        static bool CanMultiply<T>()
-        {
-            try
-            {
-                var x = default(T) * (dynamic)default(T);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
         }
         #endregion
     }

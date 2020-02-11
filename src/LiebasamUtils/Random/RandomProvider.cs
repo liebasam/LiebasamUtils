@@ -33,7 +33,7 @@ namespace LiebasamUtils.Random
         #endregion
 
         #region Methods
-        #region Choice
+
         /// <summary>
         /// Flips a coin with given odds.
         /// </summary>
@@ -46,23 +46,6 @@ namespace LiebasamUtils.Random
             lock (RNG) { return RNG.NextDouble() < oddsTrue; }
         }
 
-        /// <summary>
-        /// Returns one of two parameters uniformly at random.
-        /// </summary>
-        public static T Choose<T>(T a, T b) => NextBool() ? a : b;
-
-        /// <summary>
-        /// Returns an element chosen uniformly at random from the given array.
-        /// </summary>
-        public static T Choose<T>(params T[] choices)
-        {
-            if (choices is null)
-                throw new ArgumentNullException(nameof(choices));
-            return choices[RandomProvider.Next(choices.Length)];
-        }
-        #endregion
-
-        #region Shuffling
         /// <summary>
         /// Performs an in-place shuffling of a given array.
         /// </summary>
@@ -88,33 +71,6 @@ namespace LiebasamUtils.Random
                 }
             }
         }
-
-        /// <summary>
-        /// Returns a shuffled version of a given array. The original
-        /// array is left in the same order.
-        /// </summary>
-        public static T[] Shuffled<T>(T[] array)
-        {
-            if (array is null)
-                throw new ArgumentNullException(nameof(array));
-            if (array.Length <= 1)
-                return (T[])array.Clone();
-
-            var ret = (T[])array.Clone();
-            lock (RNG)
-            {
-                int i, j; T tmp;
-                for (i = 0; i < ret.Length; i++)
-                {
-                    j = RNG.Next(ret.Length);
-                    tmp = ret[j];
-                    ret[j] = ret[i];
-                    ret[i] = tmp;
-                }
-            }
-            return ret;
-        }
-        #endregion
 
         #region Next Integer
         /// <summary>
@@ -170,7 +126,7 @@ namespace LiebasamUtils.Random
         /// </summary>
         public static double NextDouble(double minValue, double maxValue)
         {
-            if (minValue > maxValue)
+            if (minValue >= maxValue)
                 throw new ArgumentOutOfRangeException(nameof(maxValue));
             lock (RNG) { return minValue + (RNG.NextDouble() * (maxValue - minValue)); }
         }
