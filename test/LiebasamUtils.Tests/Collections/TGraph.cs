@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using LiebasamUtils.Collections;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace LiebasamUtils.Tests
+namespace LiebasamUtils.Collections.Tests
 {
     [TestClass]
     public class TGraph

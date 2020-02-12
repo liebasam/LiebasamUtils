@@ -49,7 +49,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TGraph.cs" />
+    <Compile Include="Collections\TGraph.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Random\TRandomProvider.cs" />
     <Compile Include="Random\TRandomExtensions.cs" />
