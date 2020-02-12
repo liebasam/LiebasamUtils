@@ -35,17 +35,5 @@ namespace LiebasamUtils.Collections
         }
 
         public override string ToString() => string.Format(ToStringFormat, IDFrom, IDTo, Value);
-
-        /// <summary>
-        /// Singleton class for checking equality between edge IDs.
-        /// </summary>
-        public class IDComparer : IEqualityComparer<Edge<T>>
-        {
-            public static IDComparer Instance { get; } = new IDComparer();
-            private IDComparer() { }
-            public bool Equals(Edge<T> x, Edge<T> y) => x.IDFrom == y.IDFrom && x.IDTo == y.IDTo;
-            public int GetHashCode(Edge<T> obj) => CombineIDs(obj).GetHashCode();
-            ulong CombineIDs(Edge<T> obj) => (((ulong)obj.IDFrom) << sizeof(uint)) | obj.IDTo;
-        }
     }
 }

@@ -25,16 +25,5 @@ namespace LiebasamUtils.Collections
         }
 
         public override string ToString() => string.Format(ToStringFormat, ID, Value);
-
-        /// <summary>
-        /// Singleton class for checking equality between vertex IDs.
-        /// </summary>
-        public class IDComparer : IEqualityComparer<Vertex<T>>
-        {
-            public static IDComparer Instance { get; } = new IDComparer();
-            private IDComparer() { }
-            public bool Equals(Vertex<T> x, Vertex<T> y) => x.ID == y.ID;
-            public int GetHashCode(Vertex<T> obj) => obj.ID.GetHashCode();
-        }
     }
 }

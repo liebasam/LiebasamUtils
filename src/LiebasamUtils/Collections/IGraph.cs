@@ -27,9 +27,16 @@
 
         /// <summary>
         /// Attempts to remove a vertex with the given ID. This method returns
-        /// false if the vertex does not exist.
+        /// false if the vertex does not exist, or if adjacent edges exist.
         /// </summary>
         bool RemoveVertex(uint id);
+
+        /// <summary>
+        /// Forcibly removes the vertex and any adjacent edges. This method
+        /// returns false if the vertex does not exist.
+        /// </summary>
+        /// <param name="id"></param>
+        bool ForceRemoveVertex(uint id);
 
         /// <summary>
         /// Attempts to remove an edge with the given IDs. This method returns
