@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace LiebasamUtils.Collections
 {
@@ -23,6 +24,8 @@ namespace LiebasamUtils.Collections
             ID = id;
             Value = value;
         }
+
+        public Vertex<TOther> Cast<TOther>() => new Vertex<TOther>(ID, (TOther)Convert.ChangeType(Value, typeof(TOther)));
 
         public override string ToString() => string.Format(ToStringFormat, ID, Value);
     }

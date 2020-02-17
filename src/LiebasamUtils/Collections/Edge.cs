@@ -1,4 +1,6 @@
-﻿namespace LiebasamUtils.Collections
+﻿using System;
+
+namespace LiebasamUtils.Collections
 {
     /// <summary>
     /// Structure defining a graph edge, containing two IDs and data.
@@ -31,6 +33,8 @@
             IDTo = idTo;
             Value = value;
         }
+
+        public Edge<TOther> Cast<TOther>() => new Edge<TOther>(IDFrom, IDTo, (TOther)Convert.ChangeType(Value, typeof(TOther)));
 
         public override string ToString() => string.Format(ToStringFormat, IDFrom, IDTo, Value);
     }
