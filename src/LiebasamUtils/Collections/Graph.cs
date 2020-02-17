@@ -68,7 +68,7 @@ namespace LiebasamUtils.Collections
 
         public IEnumerable<Edge<TEdge>> Edges => _edges.Select(kv =>
         {
-            (var idFrom, var idTo) = KeyToEdge(kv.Key);
+            (var idFrom, var idTo) = Edge.UnzipIDs(kv.Key);
             return new Edge<TEdge>(idFrom, idTo, kv.Value);
         });
         #endregion
@@ -80,7 +80,7 @@ namespace LiebasamUtils.Collections
                 throw new InvalidOperationException(string.Format(NoVertex, idFrom));
             if (!_vertices.ContainsKey(idTo))
                 throw new InvalidOperationException(string.Format(NoVertex, idTo));
-            _edges[EdgeToKey(idFrom, idTo)] = value;
+            _edges[Edge.ZipIDs(idFrom, idTo)] = value;
         }
 
         public void AddVertex(uint id, TVert value) => _vertices[id] = value;
@@ -91,15 +91,15 @@ namespace LiebasamUtils.Collections
             _edges.Clear();
         }
 
-        public bool ContainsEdge(uint idFrom, uint idTo) => _edges.ContainsKey(EdgeToKey(idFrom, idTo));
+        public bool ContainsEdge(uint idFrom, uint idTo) => _edges.ContainsKey(Edge.ZipIDs(idFrom, idTo));
 
         public bool ContainsVertex(uint id) => _vertices.ContainsKey(id);
 
-        public TEdge GetEdge(uint idFrom, uint idTo) => _edges[EdgeToKey(idFrom, idTo)];
+        public TEdge GetEdge(uint idFrom, uint idTo) => _edges[Edge.ZipIDs(idFrom, idTo)];
 
         public TVert GetVertex(uint id) => _vertices[id];
 
-        public bool RemoveEdge(uint idFrom, uint idTo) => _edges.Remove(EdgeToKey(idFrom, idTo));
+        public bool RemoveEdge(uint idFrom, uint idTo) => _edges.Remove(Edge.ZipIDs(idFrom, idTo));
 
         public bool RemoveVertex(uint id)
         {
@@ -120,26 +120,10 @@ namespace LiebasamUtils.Collections
             return exists;
         }
 
-        public bool TryGetEdge(uint idFrom, uint idTo, out TEdge value) => _edges.TryGetValue(EdgeToKey(idFrom, idTo), out value);
+        public bool TryGetEdge(uint idFrom, uint idTo, out TEdge value) => _edges.TryGetValue(Edge.ZipIDs(idFrom, idTo), out value);
 
         public bool TryGetVertex(uint id, out TVert value) => _vertices.TryGetValue(id, out value);
         #endregion
 
-        #region Helpers
-        const int ShiftSize = sizeof(uint) * 8;
-
-        /// <summary>
-        /// Convert a from/to ID pair to a ulong.
-        /// </summary>
-        static ulong EdgeToKey(uint idFrom, uint idTo) => (((ulong)idFrom) << ShiftSize) | idTo;
-
-        /// <summary>
-        /// Convert a ulong to a from/to ID pair.
-        /// </summary>
-        static (uint, uint) KeyToEdge(ulong key) => (
-            (uint)(key >> ShiftSize),
-            (uint)((key << ShiftSize) >> ShiftSize)
-            );
-        #endregion
     }
 }
