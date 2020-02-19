@@ -106,6 +106,18 @@ namespace LiebasamUtils.Collections.Tests
             }
 
             [TestMethod]
+            public void EnumerateVertexIDs()
+            {
+                var actualIDs = graph.VertexIDs.ToArray();
+                Assert.AreEqual(vertices.Length, actualIDs.Length);
+                for (int i = 0; i < vertices.Length; i++)
+                {
+                    var vert = vertices[i];
+                    Assert.IsTrue(actualIDs.Any(id => id == vert.ID));
+                }
+            }
+
+            [TestMethod]
             public void EnumerateEdges()
             {
                 var actualEdges = graph.Edges.ToArray();
@@ -116,6 +128,18 @@ namespace LiebasamUtils.Collections.Tests
                     var actualEdge = actualEdges.First(
                         e => e.IDFrom == edge.IDFrom && e.IDTo == edge.IDTo);
                     Assert.AreEqual(edge.Value, actualEdge.Value);
+                }
+            }
+
+            [TestMethod]
+            public void EnumerateEdgeIDs()
+            {
+                var actualIDs = graph.EdgeIDs.ToArray();
+                Assert.AreEqual(edges.Length, actualIDs.Length);
+                for (int i = 0; i < edges.Length; i++)
+                {
+                    var edge = edges[i];
+                    Assert.IsTrue(actualIDs.Any(ab => ab.Item1 == edge.IDFrom && ab.Item2 == edge.IDTo));
                 }
             }
         }

@@ -66,11 +66,15 @@ namespace LiebasamUtils.Collections
 
         public IEnumerable<Vertex<TVert>> Vertices => _vertices.Select(kv => new Vertex<TVert>(kv.Key, kv.Value));
 
+        public IEnumerable<uint> VertexIDs => _vertices.Keys;
+
         public IEnumerable<Edge<TEdge>> Edges => _edges.Select(kv =>
         {
             (var idFrom, var idTo) = Edge.UnzipIDs(kv.Key);
             return new Edge<TEdge>(idFrom, idTo, kv.Value);
         });
+
+        public IEnumerable<(uint, uint)> EdgeIDs => _edges.Keys.Select(Edge.UnzipIDs);
         #endregion
 
         #region Methods
