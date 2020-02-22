@@ -5,6 +5,37 @@ namespace LiebasamUtils
 {
     public static partial class FastMath
     {
+        #region Sum
+        /// <summary>
+        /// Sums the elements in an array.
+        /// </summary>
+        public static T Sum<T>(params T[] ts) where T : struct
+        {
+            if (!CanAdd<T>())
+                throw new NotSupportedException(string.Format(NotSupported, typeof(T).FullName));
+            if (ts is null)
+                throw new ArgumentNullException(nameof(ts));
+            if (ts.Length < 1)
+                return default;
+            if (ts.Length == 1)
+                return ts[0];
+
+            int i = 0;
+            dynamic sum = default(T);
+            Vector<T> v1 = Vector<T>.One;
+            Vector<T> va;
+            for (; i < ts.Length - Vector<T>.Count; i += Vector<T>.Count)
+            {
+                va = new Vector<T>(ts, i);
+                sum += Vector.Dot(va, v1);
+            }
+            for (; i < ts.Length; i++)
+                sum += (dynamic)ts[i];
+
+            return sum;
+        }
+        #endregion
+
         #region Addition
         /// <summary>
         /// Adds together two arrays and returns the result.

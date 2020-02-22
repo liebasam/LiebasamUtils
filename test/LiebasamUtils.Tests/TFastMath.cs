@@ -45,6 +45,25 @@ namespace LiebasamUtils.Tests
             [TestMethod]
             [ExpectedException(typeof(NotSupportedException))]
             public void MatrixMultiply() => FastMath.MatrixMultiply(new MyStruct[0], new MyStruct[0][]);
+
+            [TestMethod]
+            [ExpectedException(typeof(NotSupportedException))]
+            public void Sum() => FastMath.Sum(new MyStruct[0]);
+        }
+
+        [TestClass]
+        public class Sum
+        {
+            [TestMethod]
+            [ExpectedException(typeof(ArgumentNullException))]
+            public void FailureNullArgs() => FastMath.Sum<int>(null);
+
+            [TestMethod]
+            public void Success()
+            {
+                var sum = FastMath.Sum(1, 2, 3, 4, 5, 6, 7, 8);
+                Assert.AreEqual(36, sum);
+            }
         }
 
         [TestClass]
